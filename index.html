@@ -58,13 +58,18 @@
   .header {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     padding: 12px 14px;
     border-bottom: 1px solid var(--border);
     background: transparent;
     position: sticky;
     top: 0;
     z-index: 10;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
     gap: 8px;
   }
 
@@ -196,8 +201,10 @@
 
 <div class="header">
   <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">&#9680;</button>
-  <button class="btn btn-ghost" onclick="clearAll()">Clear all</button>
-  <button class="btn btn-primary" id="add-btn" onclick="toggleDropZone()">+ Add photos</button>
+  <div class="header-right">
+    <button class="btn btn-ghost" onclick="clearAll()">Clear all</button>
+    <button class="btn btn-primary" id="add-btn" onclick="toggleDropZone()">+ Add photos</button>
+  </div>
 </div>
 
 <input type="file" id="file-input" multiple accept="image/*" onchange="handleFiles(this.files)">
