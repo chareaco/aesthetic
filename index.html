@@ -58,7 +58,7 @@
   .header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     padding: 12px 14px;
     border-bottom: 1px solid var(--border);
     background: transparent;
@@ -200,10 +200,10 @@
 <body>
 
 <div class="header">
-  <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">&#9680;</button>
   <div class="header-right">
+    <button class="btn btn-primary" id="add-btn" onclick="toggleDropZone()">+ Add</button>
     <button class="btn btn-ghost" onclick="clearAll()">Clear all</button>
-    <button class="btn btn-primary" id="add-btn" onclick="toggleDropZone()">+ Add photos</button>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">&#9680;</button>
   </div>
 </div>
 
@@ -313,7 +313,7 @@
   function toggleDropZone() {
     dropZoneVisible = !dropZoneVisible;
     document.getElementById('drop-zone').style.display = dropZoneVisible ? 'block' : 'none';
-    document.getElementById('add-btn').textContent = dropZoneVisible ? '- Hide' : '+ Add photos';
+    document.getElementById('add-btn').textContent = dropZoneVisible ? '- Hide' : '+ Add';
   }
 
   // ── File handling ─────────────────────────────────────────────
@@ -334,7 +334,7 @@
     setTimeout(() => {
       dropZoneVisible = false;
       document.getElementById('drop-zone').style.display = 'none';
-      document.getElementById('add-btn').textContent = '+ Add photos';
+      document.getElementById('add-btn').textContent = '+ Add';
     }, 300);
   }
 
