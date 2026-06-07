@@ -323,9 +323,13 @@
     toProcess.forEach(file => {
       const reader = new FileReader();
       reader.onload = async e => {
-        const img = { id: Date.now() + Math.random(), src: e.target.result, name: file.name, order: images.length };
-        await dbPut(img);
-        images.push(img);
+        const img = { id: Date.now() + Math.random(), src: e.target.result, name: file.name, order: 0 };
+        images.unshift(img);
+        // Recalculate order so newest is always first, then persist all
+        for (let i = 0; i < images.length; i++) {
+          images[i].order = i;
+          await dbPut(images[i]);
+        }
         done++;
         if (done === toProcess.length) renderGallery();
       };
