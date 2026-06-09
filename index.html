@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +9,7 @@
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  [data-theme="light"] {
+  :root {
     --border: #d9d9d9;
     --text: #1a1a1a;
     --muted: #888;
@@ -23,29 +23,30 @@
     --toggle-hover: #ddd;
   }
 
-  [data-theme="dark"] {
-    --border: #3a3a3a;
-    --text: #f0f0f0;
-    --muted: #777;
-    --accent: #f0f0f0;
-    --accent-hover: #ccc;
-    --btn-ghost-hover: #2a2a2a;
-    --drop-hover: #2a2a2a;
-    --placeholder: #2a2a2a;
-    --toggle-bg: #2a2a2a;
-    --toggle-color: #aaa;
-    --toggle-hover: #3a3a3a;
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --border: #3a3a3a;
+      --text: #f0f0f0;
+      --muted: #777;
+      --accent: #f0f0f0;
+      --accent-hover: #ccc;
+      --btn-ghost-hover: #2a2a2a;
+      --drop-hover: #2a2a2a;
+      --placeholder: #2a2a2a;
+      --toggle-bg: #2a2a2a;
+      --toggle-color: #aaa;
+      --toggle-hover: #3a3a3a;
+    }
+
+    html, body {
+      background: #191919 !important;
+      background-color: #191919 !important;
+    }
   }
 
   html, body {
     background: transparent !important;
     background-color: transparent !important;
-  }
-
-  html[data-theme="dark"],
-  html[data-theme="dark"] body {
-    background: #191919 !important;
-    background-color: #191919 !important;
   }
 
   body {
@@ -93,19 +94,7 @@
   .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
   .btn-ghost:hover { background: var(--btn-ghost-hover); color: var(--text); }
 
-  .theme-toggle {
-    width: 30px; height: 30px;
-    border-radius: 6px;
-    background: var(--toggle-bg);
-    border: 1px solid var(--border);
-    color: var(--toggle-color);
-    font-size: 14px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
-    flex-shrink: 0;
-  }
-  .theme-toggle:hover { background: var(--toggle-hover); }
+
 
   .drop-zone {
     display: none;
@@ -203,7 +192,6 @@
   <div class="header-right">
     <button class="btn btn-primary" id="add-btn" onclick="toggleDropZone()">+ Add</button>
     <button class="btn btn-ghost" onclick="clearAll()">Clear all</button>
-    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">&#9680;</button>
   </div>
 </div>
 
@@ -292,22 +280,6 @@
   let lightboxIndex = 0;
   let dragSrcIndex = null;
   let dropZoneVisible = false;
-
-  // ── Theme ────────────────────────────────────────────────────
-  const savedTheme = localStorage.getItem('gallery-theme') || 'light';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  updateToggleIcon(savedTheme);
-
-  function toggleTheme() {
-    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('gallery-theme', next);
-    updateToggleIcon(next);
-  }
-  function updateToggleIcon(theme) {
-    const btn = document.getElementById('theme-toggle');
-    if (btn) btn.innerHTML = theme === 'dark' ? '&#9728;' : '&#9790;';
-  }
 
   // ── Drop zone toggle ─────────────────────────────────────────
   function toggleDropZone() {
