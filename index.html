@@ -115,8 +115,19 @@
   .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
   .btn-ghost:hover { background: var(--btn-ghost-hover); color: var(--text); }
 
-
-
+  .theme-toggle {
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    background: var(--toggle-bg);
+    border: 1px solid var(--border);
+    color: var(--toggle-color);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .theme-toggle:hover { background: var(--toggle-hover); }
   .drop-zone {
     display: none;
     margin: 14px;
@@ -213,6 +224,8 @@
   <div class="header-right">
     <button class="btn btn-primary" id="add-btn" onclick="toggleDropZone()">+ Add</button>
     <button class="btn btn-ghost" onclick="clearAll()">Clear all</button>
+    <div style="width: 12px;"></div>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">&#9790;</button>
   </div>
 </div>
 
@@ -435,13 +448,24 @@
     });
   }
 
-  // ── Auto theme: listen for OS-level changes instantly ────────
-  const darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
-  function applyTheme(isDark) {
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  // ── Theme via URL param: ?theme=dark or ?theme=light ─────────
+  // Fallback to system preference if no param set
+  function getTheme() {
+    const param = new URLSearchParams(window.location.search).get('theme');
+    if (param === 'dark' || param === 'light') return param;
+    return localStorage.getItem('gallery-theme') || 'light';
   }
-  applyTheme(darkMQ.matches);
-  darkMQ.addEventListener('change', e => applyTheme(e.matches));
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.innerHTML = theme === 'dark' ? '&#9728;' : '&#9790;';
+  }
+  function toggleTheme() {
+    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('gallery-theme', next);
+    applyTheme(next);
+  }
+  applyTheme(getTheme());
 
   // ── Init: load from IndexedDB ─────────────────────────────────
   (async () => {
@@ -456,4 +480,4 @@
   })();
 </script>
 </body>
-</html>
+</html>x
