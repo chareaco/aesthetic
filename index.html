@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gallery</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  [data-theme="light"] {
+    --border: #d9d9d9;
+    --text: #1a1a1a;
+    --muted: #888;
+    --accent: #1a1a1a;
+    --accent-hover: #333;
+    --btn-ghost-hover: #f0f0f0;
+    --drop-hover: #f0f0f0;
+    --placeholder: #e8e8e8;
+    --toggle-bg: #efefef;
+    --toggle-color: #555;
+    --toggle-hover: #ddd;
+  }
+
+  [data-theme="dark"] {
+    --border: #3a3a3a;
+    --text: #f0f0f0;
+    --muted: #777;
+    --accent: #f0f0f0;
+    --accent-hover: #ccc;
+    --btn-ghost-hover: #2a2a2a;
+    --drop-hover: #2a2a2a;
+    --placeholder: #2a2a2a;
+    --toggle-bg: #2a2a2a;
+    --toggle-color: #aaa;
+    --toggle-hover: #3a3a3a;
+  }
+
+  html, body {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+
+  html[data-theme="dark"],
+  html[data-theme="dark"] body {
+    background: #191919 !important;
+    background-color: #191919 !important;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    transition: color 0.2s;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 13px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    letter-spacing: 0.2px;
+  }
+
+  .btn-primary { background: var(--accent); color: var(--toggle-bg); }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--btn-ghost-hover); color: var(--text); }
+
+  .theme-toggle {
+    width: 30px; height: 30px;
+    border-radius: 6px;
+    background: var(--toggle-bg);
+    border: 1px solid var(--border);
+    color: var(--toggle-color);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .theme-toggle:hover { background: var(--toggle-hover); }
+
+  .drop-zone {
+    display: none;
+    margin: 14px;
+    padding: 28px 20px;
+    border: 1.5px dashed var(--border);
+    border-radius: 8px;
+    text-align: center;
+    background: transparent;
+    transition: all 0.2s;
+  }
+  .drop-zone.drag-over { border-color: var(--accent); background: var(--drop-hover); }
+  .drop-zone p { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .drop-zone .browse-link { color: var(--text); font-weight: 500; text-decoration: underline; cursor: pointer; }
+
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    padding: 3px;
+  }
+
+  .gallery-item {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--placeholder);
+  }
+  .gallery-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease; }
+  .gallery-item:hover img { transform: scale(1.04); }
+  .gallery-item .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); transition: background 0.2s; }
+  .gallery-item:hover .overlay { background: rgba(0,0,0,0.22); }
+
+  .remove-btn {
+    position: absolute; top: 6px; right: 6px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,0,0,0.5); color: #fff; border: none;
+    cursor: pointer; font-size: 11px; display: none;
+    align-items: center; justify-content: center;
+    z-index: 5; transition: background 0.15s;
+    font-family: 'Inter', sans-serif;
+  }
+  .gallery-item:hover .remove-btn { display: flex; }
+  .remove-btn:hover { background: rgba(0,0,0,0.8); }
+
+  .drag-handle {
+    position: absolute; bottom: 6px; left: 6px;
+    width: 22px; height: 22px; border-radius: 4px;
+    background: rgba(0,0,0,0.4); color: #fff;
+    display: none; align-items: center; justify-content: center;
+    cursor: grab; font-size: 11px; z-index: 5;
+    font-family: 'Inter', sans-serif;
+  }
+  .gallery-item:hover .drag-handle { display: flex; }
+  .gallery-item.dragging { opacity: 0.35; }
+
+  .empty-state { padding: 56px 24px; text-align: center; color: var(--muted); }
+  .empty-state p { font-size: 13px; line-height: 1.7; font-weight: 300; }
+
+  /* Loading state */
+  .loading-state { padding: 40px 24px; text-align: center; color: var(--muted); font-size: 12px; }
+
+  .lightbox {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.93); z-index: 100;
+    align-items: center; justify-content: center;
+  }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 88vw; max-height: 90vh; object-fit: contain; }
+  .lightbox-close {
+    position: absolute; top: 16px; right: 20px;
+    color: #fff; font-size: 22px; cursor: pointer;
+    background: none; border: none; opacity: 0.7;
+    font-family: 'Inter', sans-serif; line-height: 1;
+  }
+  .lightbox-close:hover { opacity: 1; }
+  .lightbox-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    background: rgba(255,255,255,0.12); border: none; color: white;
+    font-size: 20px; width: 40px; height: 40px; border-radius: 50%;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s; font-family: 'Inter', sans-serif;
+  }
+  .lightbox-nav:hover { background: rgba(255,255,255,0.25); }
+  .lightbox-prev { left: 16px; }
+  .lightbox-next { right: 16px; }
+
+  #file-input { display: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-right">
+    <button class="btn btn-primary" id="add-btn" onclick="toggleDropZone()">+ Add</button>
+    <button class="btn btn-ghost" onclick="clearAll()">Clear all</button>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode">&#9680;</button>
+  </div>
+</div>
+
+<input type="file" id="file-input" multiple accept="image/*" onchange="handleFiles(this.files)">
+
+<div class="drop-zone" id="drop-zone"
+     ondragover="onDragOver(event)"
+     ondragleave="onDragLeave(event)"
+     ondrop="onDrop(event)">
+  <p>Drag &amp; drop photos here, or <span class="browse-link" onclick="document.getElementById('file-input').click()">browse files</span><br>
+  <span style="font-size:11px;color:#bbb;">JPG, PNG, GIF, WEBP</span></p>
+</div>
+
+<div class="loading-state" id="loading-state">Loading gallery...</div>
+<div class="gallery-grid" id="gallery-grid"></div>
+<div class="empty-state" id="empty-state" style="display:none;">
+  <p>No photos yet.<br>Click &ldquo;+ Add photos&rdquo; to get started.</p>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">&#x2715;</button>
+  <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1, event)">&#8249;</button>
+  <img id="lightbox-img" src="" alt="">
+  <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1, event)">&#8250;</button>
+</div>
+
+<script>
+  // ── IndexedDB setup ──────────────────────────────────────────
+  const DB_NAME = 'gallery-db';
+  const DB_VERSION = 1;
+  const STORE = 'images';
+  let db = null;
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = e => {
+        const d = e.target.result;
+        if (!d.objectStoreNames.contains(STORE)) {
+          d.createObjectStore(STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = e => resolve(e.target.result);
+      req.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function dbGetAll() {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).getAll();
+      req.onsuccess = e => resolve(e.target.result || []);
+      req.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function dbPut(item) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      const req = tx.objectStore(STORE).put(item);
+      req.onsuccess = () => resolve();
+      req.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function dbDelete(id) {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      const req = tx.objectStore(STORE).delete(id);
+      req.onsuccess = () => resolve();
+      req.onerror = e => reject(e.target.error);
+    });
+  }
+
+  function dbClear() {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      const req = tx.objectStore(STORE).clear();
+      req.onsuccess = () => resolve();
+      req.onerror = e => reject(e.target.error);
+    });
+  }
+
+  // ── State ────────────────────────────────────────────────────
+  let images = []; // { id, src, name, order }
+  let lightboxIndex = 0;
+  let dragSrcIndex = null;
+  let dropZoneVisible = false;
+
+  // ── Theme ────────────────────────────────────────────────────
+  const savedTheme = localStorage.getItem('gallery-theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateToggleIcon(savedTheme);
+
+  function toggleTheme() {
+    const next = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('gallery-theme', next);
+    updateToggleIcon(next);
+  }
+  function updateToggleIcon(theme) {
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.innerHTML = theme === 'dark' ? '&#9728;' : '&#9790;';
+  }
+
+  // ── Drop zone toggle ─────────────────────────────────────────
+  function toggleDropZone() {
+    dropZoneVisible = !dropZoneVisible;
+    document.getElementById('drop-zone').style.display = dropZoneVisible ? 'block' : 'none';
+    document.getElementById('add-btn').textContent = dropZoneVisible ? '- Hide' : '+ Add';
+  }
+
+  // ── File handling ─────────────────────────────────────────────
+  function handleFiles(files) {
+    const toProcess = [...files].filter(f => f.type.startsWith('image/'));
+    let done = 0;
+    toProcess.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = async e => {
+        const img = { id: Date.now() + Math.random(), src: e.target.result, name: file.name, order: 0 };
+        images.unshift(img);
+        // Recalculate order so newest is always first, then persist all
+        for (let i = 0; i < images.length; i++) {
+          images[i].order = i;
+          await dbPut(images[i]);
+        }
+        done++;
+        if (done === toProcess.length) renderGallery();
+      };
+      reader.readAsDataURL(file);
+    });
+    setTimeout(() => {
+      dropZoneVisible = false;
+      document.getElementById('drop-zone').style.display = 'none';
+      document.getElementById('add-btn').textContent = '+ Add';
+    }, 300);
+  }
+
+  function onDragOver(e) { e.preventDefault(); document.getElementById('drop-zone').classList.add('drag-over'); }
+  function onDragLeave(e) { document.getElementById('drop-zone').classList.remove('drag-over'); }
+  function onDrop(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').classList.remove('drag-over');
+    handleFiles(e.dataTransfer.files);
+  }
+
+  // ── Clear / Remove ───────────────────────────────────────────
+  async function clearAll() {
+    if (images.length === 0) return;
+    if (confirm('Remove all photos?')) {
+      await dbClear();
+      images = [];
+      renderGallery();
+    }
+  }
+
+  async function removeImage(id) {
+    await dbDelete(id);
+    images = images.filter(img => img.id !== id);
+    renderGallery();
+  }
+
+  // ── Reorder ──────────────────────────────────────────────────
+  function onItemDragStart(e, index) {
+    dragSrcIndex = index;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => e.target.closest('.gallery-item').classList.add('dragging'), 0);
+  }
+  function onItemDragOver(e, index) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+  async function onItemDrop(e, index) {
+    e.preventDefault();
+    if (dragSrcIndex === null || dragSrcIndex === index) return;
+    const moved = images.splice(dragSrcIndex, 1)[0];
+    images.splice(index, 0, moved);
+    dragSrcIndex = null;
+    // Update order values and persist
+    for (let i = 0; i < images.length; i++) {
+      images[i].order = i;
+      await dbPut(images[i]);
+    }
+    renderGallery();
+  }
+  function onItemDragEnd() {
+    dragSrcIndex = null;
+    document.querySelectorAll('.gallery-item').forEach(el => el.classList.remove('dragging'));
+  }
+
+  // ── Lightbox ─────────────────────────────────────────────────
+  function openLightbox(index) {
+    lightboxIndex = index;
+    document.getElementById('lightbox-img').src = images[index].src;
+    document.getElementById('lightbox').classList.add('active');
+  }
+  function closeLightbox(e) {
+    if (e && e.target !== document.getElementById('lightbox') && !e.target.classList.contains('lightbox-close')) return;
+    document.getElementById('lightbox').classList.remove('active');
+  }
+  function navigateLightbox(dir, e) {
+    if (e) e.stopPropagation();
+    lightboxIndex = (lightboxIndex + dir + images.length) % images.length;
+    document.getElementById('lightbox-img').src = images[lightboxIndex].src;
+  }
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('active')) return;
+    if (e.key === 'ArrowLeft') navigateLightbox(-1);
+    if (e.key === 'ArrowRight') navigateLightbox(1);
+    if (e.key === 'Escape') document.getElementById('lightbox').classList.remove('active');
+  });
+
+  // ── Render ───────────────────────────────────────────────────
+  function renderGallery() {
+    const grid = document.getElementById('gallery-grid');
+    const empty = document.getElementById('empty-state');
+    const loading = document.getElementById('loading-state');
+    loading.style.display = 'none';
+    grid.innerHTML = '';
+    empty.style.display = images.length === 0 ? 'block' : 'none';
+
+    images.forEach((img, i) => {
+      const item = document.createElement('div');
+      item.className = 'gallery-item';
+      item.draggable = true;
+      item.innerHTML = `
+        <img src="${img.src}" alt="${img.name}" loading="lazy">
+        <div class="overlay"></div>
+        <button class="remove-btn" title="Remove" onclick="event.stopPropagation(); removeImage(${img.id})">&#x2715;</button>
+        <div class="drag-handle" title="Reorder">&#8286;</div>
+      `;
+      item.addEventListener('click', () => openLightbox(i));
+      item.addEventListener('dragstart', e => onItemDragStart(e, i));
+      item.addEventListener('dragover', e => onItemDragOver(e, i));
+      item.addEventListener('drop', e => onItemDrop(e, i));
+      item.addEventListener('dragend', onItemDragEnd);
+      item.querySelector('.drag-handle').addEventListener('click', e => e.stopPropagation());
+      grid.appendChild(item);
+    });
+  }
+
+  // ── Init: load from IndexedDB ─────────────────────────────────
+  (async () => {
+    try {
+      db = await openDB();
+      const stored = await dbGetAll();
+      images = stored.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    } catch (err) {
+      console.warn('IndexedDB unavailable, falling back to memory:', err);
+    }
+    renderGallery();
+  })();
+</script>
+</body>
+</html>
