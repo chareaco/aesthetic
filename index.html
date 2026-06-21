@@ -349,15 +349,6 @@
     handleFiles(e.dataTransfer.files);
   }
 
-  // ── Clear / Remove ───────────────────────────────────────────
-  async function clearAll() {
-    if (images.length === 0) return;
-    if (confirm('Remove all photos?')) {
-      await dbClear();
-      images = [];
-      renderGallery();
-    }
-  }
 
   async function removeImage(id) {
     await dbDelete(id);
